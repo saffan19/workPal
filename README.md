@@ -1,6 +1,6 @@
 To run:
 
-pip install -r requirement.txt
+pip install -r requirements.txt
 python App/app.py
 
 
