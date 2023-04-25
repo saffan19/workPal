@@ -154,7 +154,7 @@ class App:
         
     def run_fatigue_analysis(self):
         if self.fatigue_analysis_var.get():
-            self.fatigue_analysis_process=subprocess.Popen(["python","fatigueAnalysis.py"])###############
+            self.fatigue_analysis_process=subprocess.Popen(["python","./ModelExecutables/fatigueAnalysis.py"])###############
         else:
             # If the checkbox is unchecked, stop the posture analysis script
             if self.fatigue_analysis_process is not None:
