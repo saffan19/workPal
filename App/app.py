@@ -39,7 +39,7 @@ class App:
         title.place(relx=0.5, rely=0.6, anchor="center")
 
         # Create a frame for the right side of the app
-        right_frame = tk.Frame(self.master, bg="#f2f2f2", width=300, height=400, bd=0)
+        right_frame = tk.Frame(self.master, bg="#f2f2f2", width=300, height=400, bd=0)#bg="#f2f2f2"
         right_frame.pack(side="right", fill="both", expand=True)
 
         #checkbox values variables:
@@ -77,9 +77,10 @@ class App:
         self.fatigue_analysis_process= None
 
 
-        #Store the process running the posture view
+        #Store the process running the posture view and face view
         self.view_pose_process= None
-        #S
+        self.view_face_process= None
+        
 
         # Enable or disable the view pose button based on the state of the posture analysis checkbox
         self.posture_analysis_var.trace("w", self.update_view_pose_btn_state)
@@ -119,9 +120,12 @@ class App:
             self.view_face_btn["state"] = "normal"
         else:
             self.view_face_btn["state"] = "disabled"
+
+
     def run_posture_analysis(self):
         if self.posture_analysis_var.get():
             # If the checkbox is checked, start the posture analysis script
+            self.view_pose_btn['text'] = "View Pose"
             self.posture_analysis_process = subprocess.Popen(["python", "./ModelExecutables/poseAnalysis.py"])############
         else:
             # If the checkbox is unchecked, stop the posture analysis script
@@ -132,6 +136,10 @@ class App:
     
     def view_pose(self):
         self.viewPose=~self.viewPose
+        if self.view_pose_btn['text'] == "View Pose":
+            self.view_pose_btn['text'] = "Hide Pose"
+        else:
+            self.view_pose_btn['text'] = "View Pose"
         print("POSE IS ",self.viewPose)
         if self.viewPose:
             self.posture_analysis_process.terminate()
@@ -142,9 +150,32 @@ class App:
                 self.view_pose_process.terminate()
             self.posture_analysis_process = subprocess.Popen(["python", "./ModelExecutables/poseAnalysis.py"])
 
+
+    def run_fatigue_analysis(self):
+        if self.fatigue_analysis_var.get():
+            self.view_face_btn['text'] = "View Face"
+            self.fatigue_analysis_process=subprocess.Popen(["python","./ModelExecutables/fatigueAnalysis.py"])###############
+        else:
+            # If the checkbox is unchecked, stop the posture analysis script
+            if self.fatigue_analysis_process is not None:
+                self.fatigue_analysis_process.terminate()
+
+
     def view_face(self):
         self.viewFace=~self.viewFace
+        if self.view_face_btn['text'] == "View Face":
+            self.view_face_btn['text'] = "Hide Face"
+        else:
+            self.view_face_btn['text'] = "View Face"
         print("Face IS ",self.viewFace)
+        if self.viewFace:
+            self.fatigue_analysis_process.terminate()
+            self.view_face_process=subprocess.Popen(["python","./ModelExecutables/fatigueAnalysis.py","1"])############
+
+        else:
+            if self.viewPose is not None:
+                self.view_face_process.terminate()
+            self.fatigue_analysis_process=subprocess.Popen(["python","./ModelExecutables/fatigueAnalysis.py"])
 
 
     def generate_report(self):
@@ -152,13 +183,7 @@ class App:
 
 
         
-    def run_fatigue_analysis(self):
-        if self.fatigue_analysis_var.get():
-            self.fatigue_analysis_process=subprocess.Popen(["python","./ModelExecutables/fatigueAnalysis.py"])###############
-        else:
-            # If the checkbox is unchecked, stop the posture analysis script
-            if self.fatigue_analysis_process is not None:
-                self.fatigue_analysis_process.terminate()
+
 
 if __name__ == "__main__":
     root = tk.Tk()

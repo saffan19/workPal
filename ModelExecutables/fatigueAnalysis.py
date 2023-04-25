@@ -9,7 +9,8 @@ import pygame  #For playing sound
 import time
 import dlib
 import cv2
-
+import sys
+import winsound
 #Initialize Pygame and load music
 pygame.mixer.init()
 pygame.mixer.music.load('./Resources/audio/alert.wav')
@@ -117,6 +118,9 @@ while (True):
             #If no. of frames is greater than threshold frames,
             if COUNTER >= EYE_ASPECT_RATIO_CONSEC_FRAMES:
                 pygame.mixer.music.play(-1)
+                frequency=3000
+                duration=125
+                winsound.Beep(frequency, duration)  
                 cv2.putText(frame, "You are Drowsy", (150, 200),
                             cv2.FONT_HERSHEY_SIMPLEX, 1.5, (0, 0, 255), 2)
         else:
@@ -131,9 +135,7 @@ while (True):
         # visualize the mouth
         mouthHull = cv2.convexHull(mouth)
 
-        cv2.drawContours(frame, [mouthHull], -1, (0, 255, 0), 1)
-        cv2.putText(frame, "MAR: {:.2f}".format(mar), (650, 20),
-                    cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255), 2)
+
 
         # Draw text if mouth is open
         if mar > MOUTH_AR_THRESH:
@@ -141,7 +143,11 @@ while (True):
                         cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255), 2)
 
     #Show video feed
-    cv2.imshow('Video', frame)
+    if len(sys.argv)>1:
+        cv2.drawContours(frame, [mouthHull], -1, (0, 255, 0), 1)
+        cv2.putText(frame, "MAR: {:.2f}".format(mar), (650, 20),
+        cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255), 2)
+        cv2.imshow('Video', frame)
     if (cv2.waitKey(1) & 0xFF == ord('q')):
         break
 
