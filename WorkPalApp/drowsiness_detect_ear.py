@@ -17,15 +17,11 @@ pygame.mixer.music.load('audio/alert.wav')
 #Minimum threshold of eye aspect ratio below which alarm is triggerd
 EYE_ASPECT_RATIO_THRESHOLD = 0.3
 
-MOUTH_AR_THRESH = 0.77
-
 #Minimum consecutive frames for which eye ratio is below threshold for alarm to be triggered
 EYE_ASPECT_RATIO_CONSEC_FRAMES = 50
 
 #COunts no. of consecutuve frames below threshold value
 COUNTER = 0
-
-(mStart, mEnd) = (49, 68)
 
 #Load face cascade which will be used to draw a rectangle around detected faces.
 face_cascade = cv2.CascadeClassifier(
@@ -40,23 +36,6 @@ def eye_aspect_ratio(eye):
 
     ear = (A + B) / (2 * C)
     return ear
-
-
-def mouth_aspect_ratio(mouth):
-    # compute the euclidean distances between the two sets of
-    # vertical mouth landmarks (x, y)-coordinates
-    A = distance.euclidean(mouth[2], mouth[10])  # 51, 59
-    B = distance.euclidean(mouth[4], mouth[8])  # 53, 57
-
-    # compute the euclidean distance between the horizontal
-    # mouth landmark (x, y)-coordinates
-    C = distance.euclidean(mouth[0], mouth[6])  # 49, 55
-
-    # compute the mouth aspect ratio
-    mar = (A + B) / (2.0 * C)
-
-    # return the mouth aspect ratio
-    return mar
 
 
 #Load face detector and predictor, uses dlib shape predictor file
@@ -122,23 +101,6 @@ while (True):
         else:
             pygame.mixer.music.stop()
             COUNTER = 0
-
-        mouth = shape[mStart:mEnd]
-
-        mouthMAR = mouth_aspect_ratio(mouth)
-        mar = mouthMAR
-        # compute the convex hull for the mouth, then
-        # visualize the mouth
-        mouthHull = cv2.convexHull(mouth)
-
-        cv2.drawContours(frame, [mouthHull], -1, (0, 255, 0), 1)
-        cv2.putText(frame, "MAR: {:.2f}".format(mar), (650, 20),
-                    cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255), 2)
-
-        # Draw text if mouth is open
-        if mar > MOUTH_AR_THRESH:
-            cv2.putText(frame, "Yawning!", (150, 400),
-                        cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255), 2)
 
     #Show video feed
     cv2.imshow('Video', frame)
