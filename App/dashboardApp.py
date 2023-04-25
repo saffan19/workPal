@@ -1,3 +1,4 @@
+import calendar
 import tkinter as tk
 from tkinter import ttk
 from tkcalendar import DateEntry
@@ -72,6 +73,14 @@ class DashboardApp:
         )
         weekly_report_btn.pack(padx=10, pady=5)
 
+        # create weekly report button
+        monthly_report_btn = ttk.Button(
+            frame, text="Monthly Report", width=20, 
+            command=lambda: self.generate_monthly_report(cal.get_date()), 
+            style="Monthly.TButton"
+        )
+        monthly_report_btn.pack(padx=10, pady=5)
+
         # define styles for the buttons
         s = ttk.Style()
         s.configure("Daywise.TButton", foreground="teal", bg="teal", font=("Helvetica", 12), 
@@ -80,6 +89,10 @@ class DashboardApp:
         s.configure("Weekly.TButton", foreground="black", background="pink", font=("Helvetica", 12), 
                     borderwidth=0, bordercolor="pink", borderradius=5, transition="0.3s")
         s.map("Weekly.TButton", background=[("active", "pink")])
+        s.configure("Monthly.TButton", foreground="black", background="pink", font=("Helvetica", 12), 
+                    borderwidth=0, bordercolor="pink", borderradius=5, transition="0.3s")
+        s.map("Monthly.TButton", background=[("active", "pink")])
+
     def generate_daywise_report(self, day):
         df = pd.read_csv('./Logs/posture_log.txt', names=['timestamp', 'status'], delimiter=', ')
         df['timestamp'] = pd.to_datetime(df['timestamp'])
@@ -98,6 +111,7 @@ class DashboardApp:
         plt.ylabel('Frequency')
         plt.xticks(range(min(freq_by_hour.index), max(freq_by_hour.index)+1)) # modify x-axis range
         plt.grid(True)
+        plt.autoscale()
         plt.show()
 
     def generate_weekly_report(self, start_date):
@@ -116,7 +130,31 @@ class DashboardApp:
         plt.xlabel('Date')
         plt.ylabel('Frequency')
         plt.grid(True)
+        plt.autoscale()
         plt.show()
+
+    def generate_monthly_report(self, date):
+        start_date = date.replace(day=1)
+        end_date = start_date + pd.offsets.MonthEnd(1)
+        df = pd.read_csv('./Logs/posture_log.txt', names=['timestamp', 'status'], delimiter=', ')
+        df['timestamp'] = pd.to_datetime(df['timestamp'])
+        df = df[df['status'] == 'bad posture']
+        start_ts = pd.Timestamp(start_date)
+        end_ts = pd.Timestamp(end_date)
+        df = df[df['timestamp'].between(start_ts, end_ts)]
+        freq_by_day = df.groupby(df['timestamp'].dt.day).count()
+
+        plt.figure(figsize=(10, 6))
+        plt.plot(freq_by_day.index, freq_by_day['status'])
+        plt.title(f"Monthly Report of Bad Posture ({start_date.strftime('%Y-%m-%d')} to {end_date.strftime('%Y-%m-%d')})")
+        plt.xlabel('Day of the Month')
+        plt.ylabel('Frequency')
+        plt.xticks(freq_by_day.index)
+        plt.grid(True)
+        plt.autoscale()
+        plt.show()
+
+
 
 if __name__ == "__main__":
     root = tk.Tk()

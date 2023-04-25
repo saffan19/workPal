@@ -1,4 +1,5 @@
 import tkinter as tk
+from PIL import Image, ImageTk
 import psutil
 import subprocess
 class App:
@@ -25,21 +26,39 @@ class App:
 
 
         # Create a frame for the left side of the app
+        # left_frame = tk.Frame(self.master, bg="black", width=300, height=400)
+        # left_frame.pack(side="left", fill="both", expand=True)
+
+
         left_frame = tk.Frame(self.master, bg="black", width=300, height=400)
         left_frame.pack(side="left", fill="both", expand=True)
+        
+        # Load image
+        image = Image.open("./Resources/logo2.png")
+       # Resize image to fit the frame
+        resized_image = image.resize((300, 400))
+        # Convert the image to PhotoImage format and store it in an instance variable
+        self.photo_image = ImageTk.PhotoImage(resized_image)
+        # Create a Label widget to display the image
+        image_label = tk.Label(left_frame, image=self.photo_image, bg="black")
+        image_label.pack(fill="both", expand=True)
 
+#############################
+#############################
+
+#################
         # Add the WorkPal logo to the left frame
-        logo_img = tk.PhotoImage(file="./Resources/logo.png")
-        logo = tk.Label(left_frame, image=logo_img, bg="black")
-        logo.image = logo_img # to prevent image from being garbage collected
-        logo.place(relx=0.5, rely=0.3, anchor="center")
+        # logo_img = tk.PhotoImage(file="./Resources/logo.png")
+        # logo = tk.Label(left_frame, image=logo_img, bg="black")
+        # logo.image = logo_img # to prevent image from being garbage collected
+        # logo.place(relx=0.5, rely=0.3, anchor="center")
 
-        # Add the WorkPal title to the left frame
-        title = tk.Label(left_frame, text="WorkPal", bg="black", fg="white", font=("Helvetica", 20, "bold"), highlightthickness=0)
-        title.place(relx=0.5, rely=0.6, anchor="center")
-
+        # # Add the WorkPal title to the left frame
+        # title = tk.Label(left_frame, text="WorkPal", bg="black", fg="white", font=("Helvetica", 20, "bold"), highlightthickness=0)
+        # title.place(relx=0.5, rely=0.6, anchor="center")
+#################
         # Create a frame for the right side of the app
-        right_frame = tk.Frame(self.master, bg="#f2f2f2", width=300, height=400, bd=0)#bg="#f2f2f2"
+        right_frame = tk.Frame(self.master, bg="black", width=300, height=400, bd=0)#bg="#f2f2f2"
         right_frame.pack(side="right", fill="both", expand=True)
 
         #checkbox values variables:
@@ -47,7 +66,7 @@ class App:
         self.posture_analysis_var = tk.BooleanVar()
 
         # Create checkboxes for posture analysis
-        posture_analysis_cb = tk.Checkbutton(right_frame, text="Enable posture analysis", variable=self.posture_analysis_var, bg="#f2f2f2", font=("Helvetica", 12), command=self.run_posture_analysis)
+        posture_analysis_cb = tk.Checkbutton(right_frame, text="Enable posture analysis", variable=self.posture_analysis_var, bg="black", fg="#C69749", font=("Helvetica", 12), command=self.run_posture_analysis)##bg="#f2f2f2"
         posture_analysis_cb.place(relx=0.5, rely=0.2, anchor="center")
 
         # Create a button to view pose
@@ -56,7 +75,7 @@ class App:
 
 
         # Create checkboxes for fatigue analysis
-        fatigue_analysis_cb = tk.Checkbutton(right_frame, text="Enable fatigue analysis", variable=self.fatigue_analysis_var, bg="#f2f2f2", font=("Helvetica", 12),command=self.run_fatigue_analysis)
+        fatigue_analysis_cb = tk.Checkbutton(right_frame, text="Enable fatigue analysis", variable=self.fatigue_analysis_var, bg="black", fg="#C69749", font=("Helvetica", 12),command=self.run_fatigue_analysis)
         fatigue_analysis_cb.place(relx=0.5, rely=0.5, anchor="center")
 
         # Create a button to view face
@@ -67,7 +86,7 @@ class App:
 
 
         # Create a button to generate report
-        generate_report_btn = tk.Button(right_frame, text="View Report", bg="teal", fg="white", font=("Helvetica", 14), bd=0, borderwidth=0, highlightthickness=0, padx=20, pady=10,command=self.generate_report)
+        generate_report_btn = tk.Button(right_frame, text="View Report", bg="#282A3A", fg="white", font=("Helvetica", 14), bd=0, borderwidth=0, highlightthickness=0, padx=20, pady=10,command=self.generate_report)
         generate_report_btn.place(relx=0.5, rely=0.8, anchor="center")
 
         # Store the process running the posture analysis script
@@ -91,7 +110,7 @@ class App:
         # #FOR SHOWING CPU USAGE#####################################################
         self.cpu_percent = psutil.cpu_percent()
 
-        self.cpu_usage_label = tk.Label(master, text="CPU Usage:"+str(self.cpu_percent) + " %")
+        self.cpu_usage_label = tk.Label(master, text="CPU Usage:"+str(self.cpu_percent) + " %",bg="#B02E45",fg="white")
         self.cpu_usage_label.pack()
         self.cpu_usage_label.place(relx=0.90, rely=0.95, anchor="center")
         self.update_cpu_usage_label()
