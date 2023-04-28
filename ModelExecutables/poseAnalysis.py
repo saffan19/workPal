@@ -3,7 +3,9 @@ import mediapipe as mp
 import numpy as np
 import winsound
 import sys
-
+import pickle
+from sklearn.linear_model import LogisticRegression
+import datetime
 ##############################
 
 
@@ -68,8 +70,8 @@ with mp_pose.Pose(
 
    # m=m1+m2
 
-    print(results.pose_landmarks.landmark[8].z)
-    print(results.pose_landmarks.landmark[7].z)
+    # print(results.pose_landmarks.landmark[8].z)
+    # print(results.pose_landmarks.landmark[7].z)
 
 
 ######################################################
@@ -97,8 +99,33 @@ goodPos=0
 badPos=0
 
 
+
+def get_angle(a, b, c):
+    """Calculate cosine of the angle between three points in 2D space"""
+    # Calculate the vectors between the three points
+    ux, uy = a[0]-b[0], a[1]-b[1]
+    vx, vy = c[0]-b[0], c[1]-b[1]
+
+    # Calculate the dot product of the vectors
+    dot_product = ux*vx + uy*vy
+
+    # Calculate the magnitudes of the vectors
+    mag1 = ((ux)**2 + (uy)**2)**0.5
+    mag2 = ((vx)**2 + (vy)**2)**0.5
+
+    # Calculate the cosine of the angle using the dot product and magnitudes
+    cos_angle = dot_product / (mag1 * mag2)
+
+    # Return the cosine of the angle
+    return round(cos_angle,4)
+
+
+
+
+
+
 # For webcam input:
-cap = cv2.VideoCapture(0)#Change
+cap = cv2.VideoCapture(1)#Change
 with mp_pose.Pose(
     min_detection_confidence=0.5,
     min_tracking_confidence=0.5) as pose:
@@ -114,7 +141,9 @@ with mp_pose.Pose(
     image.flags.writeable = False
     image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
     results = pose.process(image)
-
+    # print("-------")
+    # print(results.pose_landmarks.landmark[8].x)
+    # print("-------")
     # Draw the pose annotation on the image.
     image.flags.writeable = True
     image = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
@@ -128,53 +157,102 @@ with mp_pose.Pose(
     if len(sys.argv)>1:
       cv2.imshow('MediaPipe Pose', cv2.flip(image, 1))
     
-    ############################
-    #right ear
-    x1=results.pose_landmarks.landmark[8].x
-    y1=results.pose_landmarks.landmark[8].y
+#     ############################
+#     #right ear
+#     x1=results.pose_landmarks.landmark[8].x
+#     y1=results.pose_landmarks.landmark[8].y
 
-    #right shoulder
-    x2=results.pose_landmarks.landmark[12].x
-    y2=results.pose_landmarks.landmark[12].y    
+#     #right shoulder
+#     x2=results.pose_landmarks.landmark[12].x
+#     y2=results.pose_landmarks.landmark[12].y    
 
-    #right hib
-    x3=results.pose_landmarks.landmark[24].x
-    y3=results.pose_landmarks.landmark[24].y
+#     #right hib
+#     x3=results.pose_landmarks.landmark[24].x
+#     y3=results.pose_landmarks.landmark[24].y
     
-    m1=abs((y2-y1)/(x2-x1))
+#     m1=abs((y2-y1)/(x2-x1))
 
-#left:
-    xx1=results.pose_landmarks.landmark[7].x
-    yy1=results.pose_landmarks.landmark[7].y
-
-
-    xx2=results.pose_landmarks.landmark[11].x
-    yy2=results.pose_landmarks.landmark[11].y    
+# #left:
+#     xx1=results.pose_landmarks.landmark[7].x
+#     yy1=results.pose_landmarks.landmark[7].y
 
 
-    xx3=results.pose_landmarks.landmark[23].x
-    yy3=results.pose_landmarks.landmark[23].y
+#     xx2=results.pose_landmarks.landmark[11].x
+#     yy2=results.pose_landmarks.landmark[11].y    
+
+
+#     xx3=results.pose_landmarks.landmark[23].x
+#     yy3=results.pose_landmarks.landmark[23].y
     
-    m2=abs((yy2-yy1)/(xx2-xx1))    
+#     m2=abs((yy2-yy1)/(xx2-xx1))    
    # m2=(y2-y3)/(x3-x2)
 
   #  m=m1+m2
+  ##KEYPOINTS:
 
+    nose=[results.pose_landmarks.landmark[0].x,results.pose_landmarks.landmark[0].y]
+    left_shoulder=[results.pose_landmarks.landmark[11].x,results.pose_landmarks.landmark[11].y]
+    right_shoulder=[results.pose_landmarks.landmark[12].x,results.pose_landmarks.landmark[12].y]
 
-    if(m1<=1.9 or m2<=1.9 or m1>=3.2 or m2>=3.2):
-      # frequency=2000
-      # duration=125
-      # winsound.Beep(frequency, duration)
-      badPos=badPos+1
-      goodPos=0
-      if badPos>=10:
-        frequency=2000
-        duration=125
-        winsound.Beep(frequency, duration)        
+    left_hip=[results.pose_landmarks.landmark[23].x,results.pose_landmarks.landmark[23].y]
+    right_hip=[results.pose_landmarks.landmark[24].x,results.pose_landmarks.landmark[24].y]
+    left_knee=[results.pose_landmarks.landmark[25].x,results.pose_landmarks.landmark[25].y]
+    right_knee=[results.pose_landmarks.landmark[26].x,results.pose_landmarks.landmark[26].y]
+    left_ear=[results.pose_landmarks.landmark[7].x,results.pose_landmarks.landmark[7].y]
+    right_ear=[results.pose_landmarks.landmark[8].x,results.pose_landmarks.landmark[8].y]
+    # Calculate angles
+    nose_rs_rh_angle = get_angle(nose, right_shoulder, right_hip)
+    nose_ls_lh_angle = get_angle(nose, left_shoulder, left_hip)
+    rear_rsrh_angle = get_angle(right_ear, right_shoulder, right_hip)
+    lear_lslh_angle = get_angle(left_ear, left_shoulder, left_hip)
+    lsh_lh_lk_angle = get_angle(left_shoulder, left_hip, left_knee)
+    rsh_rh_rk_angle = get_angle(right_shoulder, right_hip, right_knee)
+    nose_rh_rk_angle = get_angle(nose, right_hip, right_knee)
+    nose_lh_lk_angle = get_angle(nose, left_hip, left_knee)
+    rsh_lh_lk_angle = get_angle(right_shoulder, left_hip, left_knee)
+    lsh_rh_rk_angle = get_angle(left_shoulder, right_hip, right_knee)
+
+    with open('./Models/classifierModels/modelLR.pkl', 'rb') as f:
+      modelLR = pickle.load(f)
+
+    angles=[nose_rs_rh_angle,nose_ls_lh_angle,rear_rsrh_angle,lear_lslh_angle,lsh_lh_lk_angle,rsh_rh_rk_angle,nose_rh_rk_angle,nose_lh_lk_angle,rsh_lh_lk_angle,lsh_rh_rk_angle]
+    # Example of new data for prediction
+    new_data = np.array([angles])
+
+    # Make predictions on new data using the loaded model
+    predictions = modelLR.predict(new_data)
+
+    if(predictions[0]==1):
+      print('GOOD POSTURE')
     else:
-      goodPos=goodPos+1
-      if goodPos>=10:
-        badPos=0
+      print('BAD POSTURE')
+      frequency=2000
+      duration=125
+      winsound.Beep(frequency, duration)
+      # Open the file in append mode
+      with open('./Logs/posture_log.txt', 'a') as file:
+          # Get the current timestamp and format it
+          timestamp = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+          # Write the timestamp and label to the file
+          file.write(f"{timestamp}, bad posture\n")
+
+    #print([nose_rs_rh_angle,nose_ls_lh_angle,rear_rsrh_angle,lear_lslh_angle,lsh_lh_lk_angle,rsh_rh_rk_angle,nose_rh_rk_angle,nose_lh_lk_angle,rsh_lh_lk_angle,lsh_rh_rk_angle])
+
+
+    # if(m1<=1.9 or m2<=1.9 or m1>=3.2 or m2>=3.2):
+    #   # frequency=2000
+    #   # duration=125
+    #   # winsound.Beep(frequency, duration)
+    #   badPos=badPos+1
+    #   goodPos=0
+    #   if badPos>=10:
+    #     frequency=2000
+    #     duration=125
+    #     winsound.Beep(frequency, duration)        
+    # else:
+    #   goodPos=goodPos+1
+    #   if goodPos>=10:
+    #     badPos=0
 
 
     #############################

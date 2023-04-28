@@ -11,6 +11,7 @@ import dlib
 import cv2
 import sys
 import winsound
+import datetime
 #Initialize Pygame and load music
 pygame.mixer.init()
 pygame.mixer.music.load('./Resources/audio/alert.wav')
@@ -123,6 +124,12 @@ while (True):
                 winsound.Beep(frequency, duration)  
                 cv2.putText(frame, "You are Drowsy", (150, 200),
                             cv2.FONT_HERSHEY_SIMPLEX, 1.5, (0, 0, 255), 2)
+                # Open the file in append mode
+                with open('./Logs/fatigue_log.txt', 'a') as file:
+                    # Get the current timestamp and format it
+                    timestamp = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+                    # Write the timestamp and label to the file
+                    file.write(f"{timestamp}, fatigue\n")
         else:
             pygame.mixer.music.stop()
             COUNTER = 0
